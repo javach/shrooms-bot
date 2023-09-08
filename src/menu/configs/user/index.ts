@@ -1,4 +1,5 @@
 import {
+    UserContactsNode,
     UserEditAddressHandler,
     UserEditAddressNode,
     UserMainNode
@@ -53,7 +54,9 @@ export const userNodes = [
 
     UserProductReviewListNode,
     UserProductReviewAddNode,
-    UserProductReviewAddSuccessNode
+    UserProductReviewAddSuccessNode,
+
+    UserContactsNode
 ];
 
 export const userHandlers = [
