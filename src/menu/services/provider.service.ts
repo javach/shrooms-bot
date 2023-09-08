@@ -76,9 +76,9 @@ export class ProviderService {
             where: { telegramId: ctx.from.id }
         });
         if (user) return user;
-        return this.userRepository.create({
+        return this.userRepository.save({
             telegramId: ctx.from.id,
-            chatId: ctx.message.chat.id
+            chatId: ctx.message.chat?.id || ctx.callbackQuery?.message?.chat.id
         });
     }
 }
