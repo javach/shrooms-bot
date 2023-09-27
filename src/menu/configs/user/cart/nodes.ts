@@ -6,9 +6,14 @@ import {
     MoveButton
 } from '../../../builder';
 import { Text } from '../../../text';
-import { UserCatalogueNode, UserCatalogueProductNode } from '../catalogue';
+import {
+    UserCatalogueCategoryNode,
+    UserCatalogueNode,
+    UserCatalogueProductNode
+} from '../catalogue';
 import {
     UserCartAddProductHandler,
+    UserCartCancelAddCartEntryHandler,
     UserCartEditAddressHandler,
     UserCartEditCartEntryHandler,
     UserCartRemoveCartEntryHandler
@@ -158,29 +163,27 @@ export class UserCartAddProductNode extends MenuNode<{ id: number }> {
         const product = await this.provider.productRepository.findOne({
             where: { id: this.params.id }
         });
-        const cartEntry = await this.provider.cartEntryRepository.findOne({
-            where: { productId: this.params.id, userId: user.id }
-        });
-
-        return {
-            text: Text.User.Nodes.productAdd(product, cartEntry),
-            keyboard: new Keyboard().addBackButton(
-                UserCatalogueProductNode.withParams({ id: this.params.id })
-            )
-        };
-    }
-}
-
-export class UserCartAddProductSuccessNode extends MenuNode<{
-    id: number;
-}> {
-    async getMessage(): Promise<{ text: string; keyboard: Keyboard }> {
-        const cartEntry = await this.provider.cartEntryRepository.findOne({
-            where: { id: this.params.id },
+        let cartEntry = await this.provider.cartEntryRepository.findOne({
+            where: { productId: this.params.id, userId: user.id },
             relations: ['product']
         });
 
+        if (!cartEntry) {
+            cartEntry = await this.provider.cartEntryRepository.save({
+                product,
+                productId: product.id,
+                userId: user.id,
+                quantity: 1
+            });
+        }
+
         const keyboard = new Keyboard()
+            .addRow(
+                new MoveButton({
+                    text: Text.User.Buttons.toContinue(),
+                    node: UserCatalogueNode.withParams({ page: 0 })
+                })
+            )
             .addRow(
                 new MoveButton({
                     text: Text.User.Buttons.toCart(),
@@ -188,14 +191,16 @@ export class UserCartAddProductSuccessNode extends MenuNode<{
                 })
             )
             .addRow(
-                new MoveButton({
-                    text: Text.User.Buttons.toContinue(),
-                    node: UserCatalogueNode.withParams({ page: 0 })
+                new KeyboardButton({
+                    text: Text.User.Buttons.cancel(),
+                    handler: UserCartCancelAddCartEntryHandler.withParams({
+                        id: cartEntry.id
+                    })
                 })
             );
 
         return {
-            text: Text.User.Nodes.productAddSuccess(cartEntry),
+            text: Text.User.Nodes.productAdd(product, cartEntry),
             keyboard
         };
     }
@@ -220,7 +225,8 @@ export class UserCartConfirmOrderNode extends MenuNode {
                     user,
                     entries,
                     this.ctx.from.username
-                )
+                ),
+                { parse_mode: 'HTML' }
             );
         }
 

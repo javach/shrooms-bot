@@ -12,7 +12,7 @@ import {
 import {
     UserCartAddProductHandler,
     UserCartAddProductNode,
-    UserCartAddProductSuccessNode,
+    UserCartCancelAddCartEntryHandler,
     UserCartConfirmOrderNode,
     UserCartEditAddressHandler,
     UserCartEditAddressNode,
@@ -46,7 +46,6 @@ export const userNodes = [
     UserCartEditProductsNode,
     UserCartEditCartEntryNode,
     UserCartAddProductNode,
-    UserCartAddProductSuccessNode,
     UserCartConfirmOrderNode,
 
     UserArticleByProductListNode,
@@ -66,6 +65,7 @@ export const userHandlers = [
     UserCartEditCartEntryHandler,
     UserCartRemoveCartEntryHandler,
     UserCartEditAddressHandler,
+    UserCartCancelAddCartEntryHandler,
 
     UserProductReviewAddHandler
 ];

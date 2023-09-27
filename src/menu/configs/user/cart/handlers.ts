@@ -4,10 +4,11 @@ import { Text } from '../../../text';
 import { CartEntry } from '../../../../entities';
 import {
     UserCartNode,
-    UserCartAddProductSuccessNode,
     UserCartEditProductsNode,
-    UserCartEditCartEntryNode
+    UserCartEditCartEntryNode,
+    UserCartAddProductNode
 } from './nodes';
+import { UserCatalogueProductNode } from '../catalogue';
 
 export class UserCartAddProductHandler extends PromptHandler<{ id: number }> {
     async handle(): Promise<HandlerResponse<any>> {
@@ -35,8 +36,8 @@ export class UserCartAddProductHandler extends PromptHandler<{ id: number }> {
         cartEntry = await this.provider.cartEntryRepository.save(cartEntry);
 
         return {
-            nextNode: UserCartAddProductSuccessNode.withParams({
-                id: cartEntry.id
+            nextNode: UserCartAddProductNode.withParams({
+                id: cartEntry.productId
             })
         };
     }
@@ -58,6 +59,20 @@ export class UserCartRemoveCartEntryHandler extends Handler<{ id: number }> {
         await this.provider.cartEntryRepository.delete({ id: this.params.id });
         return {
             nextNode: UserCartEditProductsNode.withParams({ page: 0 }),
+            answerMessage: Text.User.Callback.cartEntryRemoved()
+        };
+    }
+}
+
+export class UserCartCancelAddCartEntryHandler extends UserCartRemoveCartEntryHandler {
+    async handle(): Promise<HandlerResponse<any>> {
+        const cartEntry = await this.provider.cartEntryRepository.findOne({
+            where: { id: this.params.id }
+        });
+        const productId = cartEntry.productId;
+        await this.provider.cartEntryRepository.delete({ id: this.params.id });
+        return {
+            nextNode: UserCatalogueProductNode.withParams({ id: productId }),
             answerMessage: Text.User.Callback.cartEntryRemoved()
         };
     }
