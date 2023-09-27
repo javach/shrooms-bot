@@ -16,6 +16,10 @@ import { USER_ROLE } from '../../entities';
 export class MenuService {
     constructor(private readonly providerService: ProviderService) {}
 
+    async getUser(ctx: Context) {
+        return this.providerService.getUser(ctx);
+    }
+
     async setUserAsAdmin(ctx: SessionContext) {
         const user = await this.providerService.getUser(ctx);
         user.role = USER_ROLE.ADMIN;
@@ -162,11 +166,7 @@ export class MenuService {
                 prompt
             );
         }
-        return new (this.providerService.getHandler(id))(
-            this.providerService,
-            ctx,
-            params
-        );
+        return new handler(this.providerService, ctx, params);
     }
 
     private getNode(id: string, ctx: Context, params?: any) {

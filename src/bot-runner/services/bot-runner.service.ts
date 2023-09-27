@@ -5,6 +5,7 @@ import { MenuService } from '../../menu/services';
 import { SessionContext } from '../../menu/types';
 import { Telegraf } from 'telegraf';
 import { Commands } from '../../menu/text';
+import { USER_ROLE } from '../../entities';
 
 const TOKEN =
     '1785575d74a66a690a7a22669799f2fe815c5ae09b415994e870b8aff55dee32';
@@ -33,6 +34,10 @@ export class BotRunnerService implements OnModuleInit {
 
     @Command('admin')
     async admin(@Ctx() ctx: SessionContext) {
+        const user = await this.menuService.getUser(ctx);
+        if (user.role !== USER_ROLE.ADMIN) {
+            return;
+        }
         await this.menuService.processCommand(Commands.Admin, ctx);
     }
 
